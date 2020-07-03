@@ -1,24 +1,22 @@
-# py-chrome-export [![Build Status](https://travis-ci.org/vladdoster/py-chrome-export.svg?branch=master)](https://travis-ci.org/vladdoster/py-chrome-export)
+# py-google-chrome-utils
 
-Python scripts to convert [Google Chrome]’s bookmarks and history to the [standard HTML-ish bookmarks file format][format] or [github markdown].
+Python script to convert [Google Chrome]'s bookmarks to the [standard HTML-ish bookmarks file format][format] or [github markdown], clean bookmark names (lower case, capitialize, space on a delimiter), and export browsing history to an appending list. 
 
 [Google Chrome]: http://www.google.com/chrome/
 [format]: https://msdn.microsoft.com/en-us/library/aa753582(v=vs.85).aspx
 [github markdown]: https://github.github.com/gfm/
 
-The functionality to do this for bookmarks is already built into Chrome (select Bookmarks&nbsp;→ Bookmarks Manager, then click “Organize” and select “Export Bookmarks…”).
-
 ## Installation
 
 ### Arch Linux
 
-    sudo pacman -S py-chrome-exporter
+    sudo pacman -S py-google-chrome-utils
 
 ### Homebrew
 
 If you have [Homebrew] installed, you can install these scripts with
 
-    brew install py-chrome-exporter
+    brew install py-google-chrome-utils
 
 [Homebrew]: https://brew.sh
 
@@ -26,12 +24,12 @@ If you have [Homebrew] installed, you can install these scripts with
 
 1. Download the .zip or .tar.gz file for the [latest release] and extract it.
 
-2. Run the `Makefile` to install `chrome-exporter` and accompanying `man` page.
+2. Run the `Makefile` to install `py-google-chrome-utils` and accompanying `man` page.
 
        sudo make install
 
 
-[latest release]: https://github.com/vladdoster/py-chrome-exporter/releases/latest
+[latest release]: https://github.com/vladdoster/py-google-chrome-utils/releases/latest
 
 ## Usage
 
@@ -41,7 +39,7 @@ These scripts require Python 3.2 or later. They should work on Linux, macOS, and
 
 The usage is
 
-    py-chrome-exporter bookmarks [input_file] output_file
+    google-chrome-utils bookmarks [input_file] output_file
 
 If you do not specify an input file, the script will try to open the default Chrome bookmarks file.
 
@@ -51,7 +49,7 @@ The script will ignore URLs that start with “javascript:”.
 
 The usage is
 
-    py-chrome-exporter history [input_file] output_file
+    py-google-chrome-utils history [input_file] output_file
 
 If you do not specify an input file, the script will try to open the default Chrome history file.
 
@@ -69,7 +67,7 @@ The man pages are written in Markdown; run `make man` to use Pandoc to convert t
     - Condensed {bookmark,history}-export into single cli tool.
     - Added -d/--debug flags
     - Changed print statements to use logging module.
-    - Changed name from `chrome-export` to `py-chrome-exporter`
+    - Changed name from `chrome-export` to `py-google-chrome-utils`
 * 2.0.2 (2019-06-15)
     - Added man pages and made the testing script more flexible. No changes to functionality.
 * 2.0.1 (2018-02-09)

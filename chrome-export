@@ -1,0 +1,201 @@
+#!/usr/bin/env python3
+# -*- coding: utf-8 -*-
+
+# chrome-export
+#
+# A script to convert Google Chrome's bookmarks file to the standard HTML-ish
+# format or markdown.
+#
+# Copyright (c) 2011, 2017-2018 Benjamin D. Esham.
+# This program is released under the ISC license, which you can find in LICENSE.md.
+
+import io
+from argparse import ArgumentParser, FileType, RawDescriptionHelpFormatter
+from json import dumps, loads
+from logging import DEBUG, INFO, basicConfig, debug, error, getLogger, info
+from os import environ
+from os.path import abspath, expanduser
+from platform import system
+from re import match
+from string import Template
+from sys import argv, stderr
+
+script_version = "v3.0.0"
+
+# html escaping codes from http://wiki.python.org/moin/EscapingHtml
+html_escape_table = {
+    "&": "&amp;",
+    '"': "&quot;",
+    "'": "&#39;",
+    ">": "&gt;",
+    "<": "&lt;",
+}
+
+output_html_template = """<!DOCTYPE NETSCAPE-Bookmark-file-1>
+
+<meta http-equiv='Content-Type' content='text/html; charset=UTF-8' />
+<title>Bookmarks</title>
+<h1>Bookmarks</h1>
+
+<dl><p>
+
+<dl>{bookmark_bar}</dl>
+
+<dl>{other}</dl>
+"""
+
+output_md_template = Template(
+    """### Bookmark directory
+{catalog}
+{bookmark_bar}
+{other}
+"""
+)
+
+
+def cli():
+    """ Parse command-line arguments """
+    parser = ArgumentParser(
+        formatter_class=RawDescriptionHelpFormatter,
+        add_help=True,
+        description="Convert Google Chrome's bookmarks file to either standard HTML-based or markdown format.",
+        epilog="""
+        (c) 2020 Vlad Doster
+        https://github.com/vladdoster/py-chrome-exporter
+        Forked from Benjamin D. Esham's py-chrome-bookmarks-exporter
+        """,
+    )
+    parser.add_argument("-d", "--debug", action="store_const", const=DEBUG, default=INFO, help="Enable verbose output")
+    parser.add_argument("-v", "--version", action="version", version="chrome-export {0}".format(script_version))
+    parser.add_argument("export", choices=["bookmarks", "history"], help="The data to be exported.")
+    parser.add_argument("format", choices=["html", "md"], default="html", help="Convert into either html or github flavored markdown (default=html)")
+    parser.add_argument(
+        "input_file",
+        type=FileType("r"),
+        nargs="?",
+        help="The path to the Chrome bookmarks html file. If this is omitted then the script will look for the file in Chrome's default location based on your system.",
+    )
+    parser.add_argument(
+        "output_file", type=FileType("w"), help="The path to the HTML bookmarks file will be written.",
+    )
+    return parser
+
+
+class Exporter(object):
+    def __init__(self, file_contents, fmt):
+        super().__init__()
+        self.contents = file_contents
+        self.fmt = fmt
+        if fmt == "md":
+            self.catalog = list()
+
+    def pretty_json(self, ugly):
+        return dumps(ugly, indent=2)
+
+    def sanitize(self, string):
+        res = ""
+        string = "".join(html_escape_table.get(c, c) for c in string)
+
+        for i in range(len(string)):
+            if ord(string[i]) > 127:
+                res += "&#x{:x};".format(ord(string[i]))
+            else:
+                res += string[i]
+        return res.lower()
+
+    def html_escape(self, text):
+        return "".join(html_escape_table.get(c, c) for c in text)
+
+    def convert(self):
+        debug("Processing bookmarks bar")
+        bookmark_bar = self.html_for_node(self.contents["roots"]["bookmark_bar"], self.fmt)
+        debug("Parsed bookmarks bar: {0}".format(self.pretty_json(bookmark_bar)))
+        debug("Processing other bookmarks")
+        other = self.html_for_node(self.contents["roots"]["other"], self.fmt)
+        debug("Parsed other bookmarks: {0}".format(self.pretty_json(other)))
+        return {"bookmark_bar": bookmark_bar, "other": other}
+
+    def filter_name(self, node, fmt):
+        # if n["name"] in filter_name_list:
+        #    return ""
+        # else:
+        return self.html_for_node(node, fmt)
+
+    def filter_catalog_name(self, node):
+        # if n["name"] in filter_name_list:
+        # return ""
+        # else:
+        self.catalog.append("- [{0}](#{0})\n".format(node["name"]))
+        return "<h4 id={0}>{0}</h4>".format(node["name"])
+
+    def html_for_node(self, node, fmt):
+        if "url" in node:
+            debug("Parsing HTML for url node {0}".format(self.pretty_json(node)))
+            return self.html_for_url_node(node, fmt)
+        elif "children" in node:
+            debug("Parsing HTML for a child node {0}".format(self.pretty_json(node)))
+            return self.html_for_parent_node(node, fmt)
+        else:
+            debug("Parsing HTML for unknown node {0}".format(self.pretty_json(node)))
+            return ""
+
+    def html_for_url_node(self, node, fmt):
+        if not match("javascript:", node["url"]):
+            debug("Parsing url node html into {0} with data {1}".format(fmt, node))
+            if fmt == "html":
+                return '<dt><a href="{0}">{1}</a>\n'.format(self.sanitize(node["url"]), self.sanitize(node["name"]))
+            elif fmt == "md":
+                return "- [{0}]({1})\n".format(node["name"], node["url"])
+        else:
+            debug("Skipping node since it started with 'javascript'")
+            return ""
+
+    def html_for_parent_node(self, node, fmt):
+        debug("Parsing parent node html into {0} with data {1}".format(fmt, node))
+        if fmt == "html":
+            return "<dt><h3>{0}</h3>\n<dl><p>{1}</dl><p>\n".format(self.sanitize(node["name"]), "".join([self.html_for_node(n, fmt) for n in node["children"]]))
+        elif fmt == "md":
+            return "{0}\n\n{1}\n".format(self.filter_catalog_name(node), "".join([self.filter_name(n, fmt) for n in node["children"]]))
+        else:
+            exit(error("Parent node received unknown format of {0!r}".format(fmt)))
+
+
+def get_input_file(input_file):
+    """ Try default path for bookmarks/history if no input file is supplied """
+    if input_file is None:
+        debug("Attempting to locate file from default location on {0} system".format(system()))
+        if system() == "Darwin":
+            input_filename = expanduser("~/Library/Application Support/Google/Chrome/Default/Bookmarks")
+        elif system() == "Linux":
+            input_filename = expanduser("~/.config/google-chrome/Default/Bookmarks")
+        elif system() == "Windows":
+            input_filename = environ["LOCALAPPDATA"] + r"\Google\Chrome\User Data\Default\Bookmarks"
+        else:
+            exit(error("Your system ({0!r}) is not recognized.\nPlease specify the input file path manually.".format(system())))
+        try:
+            input_file = io.open(input_filename, "r", encoding="utf-8")
+        except IOError as e:
+            if e.errno == 2:
+                exit(error("The bookmarks file could not be found in its default location ({0}).\nPlease specify the input file manually.".format(e.filename)))
+    debug("Successfully loaded {0!r}".format(input_file))
+    return input_file
+
+
+def process(input_file, output_file, fmt):
+    """ Read, convert, and write the bookmarks or history """
+    with get_input_file(input_file) as f:
+        contents = loads(f.read())
+
+    converted = Exporter(contents, fmt).convert()
+
+    debug("Attempt to write converted HTML to {0}".format(abspath(output_file.name)))
+    with output_file as f:
+        f.write(eval("output_{0}_template.format(**converted)".format(fmt)))
+
+
+if __name__ == "__main__":
+    """ Setup logging, parse cli args, and initiate main loop """
+    args = cli().parse_args()
+    logger = getLogger()
+    basicConfig(level=args.debug, format="[{levelname}] {message}", style="{")
+    process(input_file=args.input_file, output_file=args.output_file, fmt=args.format)

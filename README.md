@@ -1,6 +1,6 @@
 # py-chrome-export [![Build Status](https://travis-ci.org/vladdoster/py-chrome-export.svg?branch=master)](https://travis-ci.org/vladdoster/py-chrome-export)
 
-Python scripts to convert [Google Chrome]’s bookmarks and history to the [standard HTML-ish bookmarks file format] or [github markdown] [format].
+Python scripts to convert [Google Chrome]’s bookmarks and history to the [standard HTML-ish bookmarks file format][format] or [github markdown].
 
 [Google Chrome]: http://www.google.com/chrome/
 [format]: https://msdn.microsoft.com/en-us/library/aa753582(v=vs.85).aspx

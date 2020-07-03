@@ -1,6 +1,4 @@
-# chrome-export [![Build Status](https://travis-ci.org/bdesham/chrome-export.svg?branch=master)](https://travis-ci.org/bdesham/chrome-export)
-
-*Formerly called py-chrome-bookmarks*
+# py-chrome-export [![Build Status](https://travis-ci.org/vladdoster/py-chrome-export.svg?branch=master)](https://travis-ci.org/vladdoster/py-chrome-export)
 
 Python scripts to convert [Google Chrome]’s bookmarks and history to the [standard HTML-ish bookmarks file format] or [github markdown] [format].
 
@@ -14,13 +12,13 @@ The functionality to do this for bookmarks is already built into Chrome (select 
 
 ### Arch Linux
 
-    sudo pacman -S py-chrome-bookmarks-exporter
+    sudo pacman -S py-chrome-exporter
 
 ### Homebrew
 
 If you have [Homebrew] installed, you can install these scripts with
 
-    brew install py-chrome-bookmarks-exporter
+    brew install py-chrome-exporter
 
 [Homebrew]: https://brew.sh
 
@@ -28,12 +26,12 @@ If you have [Homebrew] installed, you can install these scripts with
 
 1. Download the .zip or .tar.gz file for the [latest release] and extract it.
 
-2. Run the `Makefile` to install `bookmark-exporter` and accompanying `man` page.
+2. Run the `Makefile` to install `chrome-exporter` and accompanying `man` page.
 
     sudo make install
 
 
-[latest release]: https://github.com/vladdoster/chrome-export/releases/latest
+[latest release]: https://github.com/vladdoster/py-chrome-exporter/releases/latest
 
 ## Usage
 
@@ -71,6 +69,7 @@ The man pages are written in Markdown; run `make man` to use Pandoc to convert t
     - Condensed {bookmark,history}-export into single cli tool.
     - Added -d/--debug flags
     - Changed print statements to use logging module.
+    - Changed name from `chrome-export` to `py-chrome-exporter`
 * 2.0.2 (2019-06-15)
     - Added man pages and made the testing script more flexible. No changes to functionality.
 * 2.0.1 (2018-02-09)

@@ -28,7 +28,7 @@ If you have [Homebrew] installed, you can install these scripts with
 
 2. Run the `Makefile` to install `chrome-exporter` and accompanying `man` page.
 
-    sudo make install
+       sudo make install
 
 
 [latest release]: https://github.com/vladdoster/py-chrome-exporter/releases/latest

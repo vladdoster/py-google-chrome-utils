@@ -10,13 +10,13 @@ Python script to convert [Google Chrome]'s bookmarks to the [standard HTML-ish b
 
 ### Arch Linux
 
-    sudo pacman -S py-google-chrome-utils
+```sudo pacman -S py-google-chrome-utils```
 
 ### Homebrew
 
 If you have [Homebrew] installed, you can install these scripts with
 
-    brew install py-google-chrome-utils
+```brew install py-google-chrome-utils```
 
 [Homebrew]: https://brew.sh
 
@@ -26,7 +26,7 @@ If you have [Homebrew] installed, you can install these scripts with
 
 2. Run the `Makefile` to install `py-google-chrome-utils` and accompanying `man` page.
 
-       sudo make install
+```sudo make install```
 
 
 [latest release]: https://github.com/vladdoster/py-google-chrome-utils/releases/latest
@@ -39,7 +39,7 @@ These scripts require Python 3.2 or later. They should work on Linux, macOS, and
 
 The usage is
 
-    google-chrome-utils bookmarks [input_file] output_file
+```google-chrome-utils bookmarks [input_file] output_file```
 
 If you do not specify an input file, the script will try to open the default Chrome bookmarks file.
 
@@ -49,7 +49,7 @@ The script will ignore URLs that start with “javascript:”.
 
 The usage is
 
-    py-google-chrome-utils history [input_file] output_file
+```py-google-chrome-utils history [input_file] output_file```
 
 If you do not specify an input file, the script will try to open the default Chrome history file.
 

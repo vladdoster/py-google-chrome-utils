@@ -96,4 +96,4 @@ This project is [hosted on GitHub](https://github.com/vladdoster/py-chrome-expor
 
 ## License
 
-Copyright © 2020 Vlad Doster. This program is released under the ISC license, which you can find in the file LICENSE.md.
+Copyright © 2020 Vlad Doster. This program is released under the ISC license, which you can find in the file [LICENSE](LICENSE).
